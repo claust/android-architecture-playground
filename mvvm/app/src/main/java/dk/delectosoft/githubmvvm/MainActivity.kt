@@ -2,16 +2,16 @@ package dk.delectosoft.githubmvvm
 
 
 import android.app.Activity
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
+import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.widget.Toast
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
-import android.arch.lifecycle.Observer
-import android.databinding.DataBindingUtil
-import android.widget.Toast
 import dk.delectosoft.githubmvvm.databinding.ActivityMainBinding
 import timber.log.Timber
 import java.util.*
@@ -41,7 +41,17 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "No user", Toast.LENGTH_SHORT).show()
             }
         })
-        // Create and launch sign-in intent
+
+        if (!loggedIn) {
+            login()
+        }
+    }
+
+    private val loggedIn: Boolean
+        get() = FirebaseAuth.getInstance().currentUser != null
+
+    private fun login() {
+        Timber.d("login")
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
