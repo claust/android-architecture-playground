@@ -1,28 +1,46 @@
 package dk.delectosoft.githubmvvm
 
+
 import android.app.Activity
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
+import android.arch.lifecycle.Observer
+import android.databinding.DataBindingUtil
+import android.widget.Toast
+import dk.delectosoft.githubmvvm.databinding.ActivityMainBinding
+import timber.log.Timber
 import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
-    private val AUTH_TOKEN = "590f581594f6a158725cb4f5a011c5e60647ba8d"
     private val RC_SIGN_IN = 123
 
     // Choose authentication providers
     private val providers: List<AuthUI.IdpConfig> = Arrays.asList(
             AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())
 
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
+        val viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+
+        viewModel.user.observe(this, Observer {
+            Timber.d("observe")
+            if (it != null) {
+                Timber.d("Binding user")
+                binding.user = it
+            } else {
+                Toast.makeText(this, "No user", Toast.LENGTH_SHORT).show()
+            }
+        })
         // Create and launch sign-in intent
         startActivityForResult(
                 AuthUI.getInstance()
@@ -41,10 +59,11 @@ class MainActivity : AppCompatActivity() {
             if (resultCode == Activity.RESULT_OK) {
                 // Successfully signed in
                 val user = FirebaseAuth.getInstance().currentUser
+
                 // ...
             } else {
                 // Sign in failed, check response for error code
-                // ...
+
             }
         }
     }
