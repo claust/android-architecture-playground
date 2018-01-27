@@ -8,11 +8,11 @@ import android.content.Intent
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.widget.Toast
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
 import dk.delectosoft.githubmvvm.databinding.ActivityMainBinding
+import org.jetbrains.anko.design.snackbar
 import timber.log.Timber
 import java.util.*
 
@@ -37,8 +37,10 @@ class MainActivity : AppCompatActivity() {
             if (it != null) {
                 Timber.d("Binding user")
                 binding.user = it
+                snackbar(binding.root, "Welcome back, ${it.displayName}")
+
             } else {
-                Toast.makeText(this, "No user", Toast.LENGTH_SHORT).show()
+                snackbar(binding.root, "Welcome back, stranger")
             }
         })
 
@@ -69,8 +71,8 @@ class MainActivity : AppCompatActivity() {
             if (resultCode == Activity.RESULT_OK) {
                 // Successfully signed in
                 val user = FirebaseAuth.getInstance().currentUser
+                snackbar(binding.root, "Welcome ${user?.displayName}")
 
-                // ...
             } else {
                 // Sign in failed, check response for error code
 
