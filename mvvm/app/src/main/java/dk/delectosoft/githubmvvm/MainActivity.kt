@@ -11,7 +11,9 @@ import android.support.v7.app.AppCompatActivity
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentChange
 import dk.delectosoft.githubmvvm.databinding.ActivityMainBinding
+import dk.delectosoft.githubmvvm.models.Contributor
 import org.jetbrains.anko.design.snackbar
 import timber.log.Timber
 import java.util.*
@@ -25,13 +27,13 @@ class MainActivity : AppCompatActivity() {
             AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build())
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var adapter: ContributorAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         val viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-
         viewModel.user.observe(this, Observer {
             Timber.d("observe")
             if (it != null) {
@@ -43,6 +45,20 @@ class MainActivity : AppCompatActivity() {
                 snackbar(binding.root, "Welcome back, stranger")
             }
         })
+
+        viewModel.contributions.observe(this, Observer {
+            it?.documentChanges?.forEach {
+                Timber.d("change: ${it.type}, ${it.oldIndex} -> ${it.newIndex}")
+                if (it.type == DocumentChange.Type.ADDED) {
+                    val cont = it.document.toObject(Contributor::class.java)
+                    adapter.contributors.add(cont)
+                    //adapter.notifyDataSetChanged()
+                }
+            }
+        })
+
+        adapter = ContributorAdapter()
+        binding.recyclerView.adapter = adapter
 
         if (!loggedIn) {
             login()
